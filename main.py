@@ -26,7 +26,7 @@ def home():
             <p style="font-size:14px; color:#aaa;">Ödemeyi aşağıdaki IBAN'a yap ve dekontu gönder.</p>
             <p><strong>IBAN:</strong> TR00 0000 0000 0000 0000 0000 00</p>
             <p><strong>Alıcı:</strong> Ömer ...</p>
-            <a href="https://wa.me/905000000000" class="btn">WHATSAPP İLE KAYIT OL</a>
+            <a href="https://wa.me/905301297064" class="btn">WHATSAPP İLE KAYIT OL</a>
         </div>
     </body>
     </html>
