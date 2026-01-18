@@ -24,7 +24,7 @@ def home():
             <hr style="border:0.5px solid #333;">
             <h3>AYLIK ABONELİK: 199 TL</h3>
             <p style="font-size:14px; color:#aaa;">Ödemeyi aşağıdaki IBAN'a yap ve dekontu gönder.</p>
-            <p><strong>IBAN:</strong> TR00 0000 0000 0000 0000 0000 00</p>
+            <p><strong>IBAN:</strong> TR20 0006 2001 2200 0006 8738 89</p>
             <p><strong>Alıcı:</strong> Ömer ...</p>
             <a href="https://wa.me/905301297064" class="btn">WHATSAPP İLE KAYIT OL</a>
         </div>
