@@ -1,41 +1,37 @@
-
-from flask import Flask, Response, request, redirect, url_for
+from flask import Flask, Response, request
 
 app = Flask(__name__)
 
 # --- YÖNETİCİ VERİLERİ ---
 ADMIN_PASSWORD = "omer"
-students = []  # Öğrenciler burada tutulacak (Geçici hafıza)
+students = [] # Burası artık bir veri merkezi
 
 @app.route('/manifest.json')
 def manifest():
     res = """{"name": "Omer Pro Admin", "short_name": "OmerPro", "start_url": "/", "display": "standalone", "background_color": "#000", "theme_color": "#ff4500", "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/842/842145.png", "sizes": "512x512", "type": "image/png"}]}"""
     return Response(res, mimetype='application/json')
 
-# --- MÜŞTERİ VİTRİNİ ---
 @app.route('/')
 def index():
     return f"{stil} {meta_tags} {nav} {html_content}"
 
-# --- YÖNETİCİ PANELİ ---
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if request.method == 'POST':
         if request.form.get('password') == ADMIN_PASSWORD:
             return render_admin_panel()
-        return "Hatalı Şifre!"
-    return f"{stil} <div class='container' style='padding-top:100px; text-align:center;'><div class='card'><h2>YÖNETİCİ GİRİŞİ</h2><form method='POST'><input type='password' name='password' placeholder='Şifre'><button class='btn-lux'>GİRİŞ YAP</button></form></div></div>"
+        return "Giriş Reddedildi!"
+    return f"{stil} <div class='container' style='padding-top:100px; text-align:center;'><div class='card'><h2>MASTER LOGIN</h2><form method='POST'><input type='password' name='password' placeholder='Şifre' autofocus><button class='btn-lux'>SİSTEME GİR</button></form></div></div>"
 
-# ÖĞRENCİ EKLEME İŞLEMİ
 @app.route('/admin/add', methods=['POST'])
 def add_student():
     name = request.form.get('name')
-    goal = request.form.get('goal')
+    status = request.form.get('status') # Ödeme Durumu
+    program = request.form.get('program') # Program Tipi
     if name:
-        students.append({"name": name, "goal": goal})
+        students.append({"name": name, "status": status, "program": program})
     return render_admin_panel()
 
-# ÖĞRENCİ SİLME İŞLEMİ
 @app.route('/admin/delete/<int:id>')
 def delete_student(id):
     if 0 <= id < len(students):
@@ -43,39 +39,69 @@ def delete_student(id):
     return render_admin_panel()
 
 def render_admin_panel():
-    student_list_html = ""
+    rows = ""
     for i, s in enumerate(students):
-        student_list_html += f"""
-        <div class='admin-stat' style='display:flex; justify-content:space-between; align-items:center;'>
-            <div><b>{s['name']}</b> - {s['goal']}</div>
-            <a href='/admin/delete/{i}' style='color:#ff4444; text-decoration:none; font-weight:900;'>SİL</a>
-        </div>"""
-    
+        color = "#00f2ff" if s['status'] == "Ödendi" else "#ff4444"
+        rows += f"""
+        <tr>
+            <td style='padding:15px; border-bottom:1px solid #222;'>{s['name']}</td>
+            <td style='padding:15px; border-bottom:1px solid #222;'>{s['program']}</td>
+            <td style='padding:15px; border-bottom:1px solid #222; color:{color};'>{s['status']}</td>
+            <td style='padding:15px; border-bottom:1px solid #222;'><a href='/admin/delete/{i}' style='color:#ff4444; text-decoration:none;'>❌</a></td>
+        </tr>"""
+
     return f"""
     {stil}
     <div class="container">
-        <h1>ADMİN <span style="color:var(--main);">KONTROL</span></h1>
+        <h1 style='letter-spacing:5px;'>CEO <span style="color:var(--main);">PANEL</span></h1>
+        
+        <div style='display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;'>
+            <div class='card' style='text-align:center; padding:15px;'>
+                <small style='color:#555;'>TOPLAM ÖĞRENCİ</small>
+                <div style='font-size:24px; font-weight:900;'>{len(students)}</div>
+            </div>
+            <div class='card' style='text-align:center; padding:15px;'>
+                <small style='color:#555;'>TAHMİNİ CİRO</small>
+                <div style='font-size:24px; font-weight:900; color:var(--main);'>{len(students) * 199} TL</div>
+            </div>
+        </div>
+
         <div class="card">
-            <h3>YENİ ÖĞRENCİ EKLE</h3>
-            <form action="/admin/add" method="POST">
-                <input type="text" name="name" placeholder="Öğrenci Adı Soyadı" required>
-                <input type="text" name="goal" placeholder="Hedefi (Örn: Yağ Yakımı)" required>
-                <button class="btn-lux" style="background:var(--main); color:#fff;">KAYDET</button>
+            <h3>HIZLI KAYIT EKLE</h3>
+            <form action="/admin/add" method="POST" style='display:grid; gap:10px;'>
+                <input type="text" name="name" placeholder="Öğrenci Adı" required>
+                <select name="program" style='width:100%; padding:15px; border-radius:10px; background:#111; color:#fff; border:1px solid #333;'>
+                    <option>Fat Loss</option>
+                    <option>Muscle Gain</option>
+                    <option>VIP Coaching</option>
+                </select>
+                <select name="status" style='width:100%; padding:15px; border-radius:10px; background:#111; color:#fff; border:1px solid #333;'>
+                    <option>Ödeme Bekliyor</option>
+                    <option>Ödendi</option>
+                </select>
+                <button class="btn-lux" style="background:var(--main); color:#fff;">SİSTEME İŞLE</button>
             </form>
         </div>
         
-        <div class="card">
-            <h3>AKTİF ÖĞRENCİLER ({len(students)})</h3>
-            {student_list_html if students else "<p style='color:#555;'>Henüz öğrenci eklenmedi.</p>"}
+        <div class="card" style='padding:0; overflow:hidden;'>
+            <table style='width:100%; border-collapse: collapse; text-align:left;'>
+                <tr style='background:rgba(255,255,255,0.05);'>
+                    <th style='padding:15px; color:#555;'>İSİM</th>
+                    <th style='padding:15px; color:#555;'>PLAN</th>
+                    <th style='padding:15px; color:#555;'>DURUM</th>
+                    <th style='padding:15px; color:#555;'>İŞLEM</th>
+                </tr>
+                {rows if rows else "<tr><td colspan='4' style='padding:20px; text-align:center; color:#444;'>Veri yok...</td></tr>"}
+            </table>
         </div>
-        <a href="/" class="btn-lux">SİTEYE DÖN</a>
+        <a href="/" class="btn-lux" style='background:none; border:1px solid #333; color:#555;'>GÜVENLİ ÇIKIŞ</a>
     </div>
     """
 
-stil = """<style>:root { --main: #ff4500; --bg: #000; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); --accent: #00f2ff; } * { box-sizing: border-box; font-family: 'Inter', sans-serif; } body { background: var(--bg); color: #fff; margin: 0; padding-bottom: 90px; } nav { background: rgba(0,0,0,0.85); padding: 20px; text-align: center; border-bottom: 1px solid var(--border); } .logo { color: var(--main); font-weight: 900; font-size: 22px; letter-spacing: 3px; text-transform: uppercase; } .container { width: 92%; max-width: 800px; margin: 0 auto; padding: 20px 0; } .card { background: var(--glass); border: 1px solid var(--border); padding: 30px; border-radius: 30px; margin-bottom: 25px; } input { width: 100%; padding: 18px; margin: 10px 0; border-radius: 15px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: #fff; } .btn-lux { display: block; width: 100%; background: #fff; color: #000; padding: 20px; border-radius: 18px; font-weight: 900; text-align: center; border: none; cursor: pointer; text-decoration:none; margin-top:10px; } .admin-stat { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid var(--main); }</style>"""
-meta_tags = """<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="manifest" href="/manifest.json">"""
-nav = """<nav><div class="logo">ÖMER PRO</div></nav>"""
-html_content = """<div class="container" style="text-align:center;"><div class="card"><h1>SUPREME SYSTEM</h1><p>Diagnostic Engine Online</p><a href="/admin" class="btn-lux">YÖNETİCİ GİRİŞİ</a></div></div>"""
+stil = """<style>:root { --main: #ff4500; --bg: #000; --border: rgba(255,255,255,0.1); } * { box-sizing: border-box; font-family: 'Inter', sans-serif; } body { background: var(--bg); color: #fff; margin: 0; } .container { width: 95%; max-width: 900px; margin: 0 auto; padding: 20px 0; } .card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 25px; border-radius: 20px; margin-bottom: 20px; } input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #0a0a0a; color: #fff; } .btn-lux { display: block; width: 100%; background: #fff; color: #000; padding: 15px; border-radius: 12px; font-weight: 900; text-align: center; border: none; cursor: pointer; text-decoration:none; }</style>"""
+meta_tags = """<meta name="viewport" content="width=device-width, initial-scale=1.0">"""
+nav = """<nav style='padding:20px; text-align:center; border-bottom:1px solid #111;'><div style='color:#ff4500; font-weight:900; letter-spacing:2px;'>ÖMER PRO SYSTEM</div></nav>"""
+html_content = """<div class="container" style="text-align:center; padding-top:50px;"><div class="card"><h1>ELITE ACCESS</h1><p style='color:#555;'>Yönetici katmanına hoş geldin Ömer.</p><a href="/admin" class="btn-lux">TERMİNALİ AÇ</a></div></div>"""
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=10000)
